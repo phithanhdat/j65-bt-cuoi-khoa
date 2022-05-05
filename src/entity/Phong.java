@@ -3,6 +3,8 @@ package entity;
 import java.util.ArrayList;
 import java.util.Date;
 
+import interfaces.Saveable;
+
 public class Phong {
 	private int id;
 	private String name, type;
@@ -57,12 +59,14 @@ public class Phong {
 		return out;
 	}
 
-	public static ArrayList<Phong> getAvailableRooms(Date checkInDate, String type) {
+	public static ArrayList<Phong> getAvailableRooms(Date checkInDate, String type, int numDay) {
 		ArrayList<Phong> ds1 = filterByType(type);
 		if (ds1 != null) {
-			
+			ArrayList<ThongTinDatPhong> ds2 = ThongTinDatPhong.filterByDate(checkInDate, numDay);
+			ds1.removeIf(p -> ThongTinDatPhong.contains(ds2, p));
+			return ds1;
 		}
-		return null;
+		return listRoom;
 	}
 	
 	public static ArrayList<Phong> filterByType(String type) {
@@ -74,6 +78,4 @@ public class Phong {
 		}
 		return null;
 	}
-	
-	
 }

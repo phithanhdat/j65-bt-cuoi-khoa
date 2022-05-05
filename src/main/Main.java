@@ -9,6 +9,7 @@ import dataio.DataIO;
 import entity.KhachHang;
 import entity.Phong;
 import entity.ThongTinDatPhong;
+import interfaces.Saveable;
 
 public class Main {
 	private static String rootDir = "C:\\Users\\Admin\\Desktop\\J65";
@@ -18,8 +19,10 @@ public class Main {
 		
 		ArrayList<Phong> listRoom = DataIO.loadPhong("phong.txt");
 		ArrayList<KhachHang> listKH = DataIO.loadGuest("guest.txt");
+		ArrayList<ThongTinDatPhong> listRoomOrder = DataIO.loadOrder("order.txt");
 		KhachHang.listKH = listKH;
 		Phong.listRoom = listRoom;
+		ThongTinDatPhong.listRoomOrder = listRoomOrder;
 		
 		Scanner sc = new Scanner(System.in);
 		int chon;
@@ -34,7 +37,7 @@ public class Main {
 				sortRooms(listRoom);
 				inDanhSach(listRoom, "Danh sach phong theo gia tang dan");
 			break;
-			case 4:
+			case 3:
 				nhapThongTinDatPhong();
 				break;
 			
@@ -42,13 +45,13 @@ public class Main {
 		} while (chon != 0);
 		
 		// save data here
-		
+		DataIO.saveGuest("guest.txt", listKH);
+		DataIO.saveOrder("order.txt", listRoomOrder);
 	}
 
 	private static void nhapThongTinDatPhong() {
 		KhachHang kh = KhachHang.nhap();
-		ThongTinDatPhong roomOrder = ThongTinDatPhong.nhap(kh.getId());
-		
+		ThongTinDatPhong.nhap(kh.getId());
 	}
 
 	private static void sortRooms(ArrayList<Phong> listRoom) {

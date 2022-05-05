@@ -3,7 +3,9 @@ package entity;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class KhachHang {
+import interfaces.Saveable;
+
+public class KhachHang implements Saveable{
 	private int id;
 	private String name, idCard, phone;
 	
@@ -14,7 +16,7 @@ public class KhachHang {
 		this.name = name;
 		this.idCard = idCard;
 		this.phone = phone;
-		this.id = currentID++;
+		this.id = ++currentID;
 	}
 	
 	public KhachHang(int id, String name, String idCard, String phone) {
@@ -22,6 +24,8 @@ public class KhachHang {
 		this.idCard = idCard;
 		this.phone = phone;
 		this.id = id;
+		currentID = id >= currentID ? id : currentID;
+		System.out.println("---> currentID: "+currentID);
 	}
 
 	public int getId() {
@@ -70,7 +74,9 @@ public class KhachHang {
 			String phone = sc.nextLine();
 			System.out.println("Nhap ten: ");
 			String name = sc.nextLine();
-			return new KhachHang(name, idCard, phone);
+			KhachHang newCustomer = new KhachHang(name, idCard, phone);
+			listKH.add(newCustomer);
+			return newCustomer;
 		}
 	}
 	
@@ -89,6 +95,11 @@ public class KhachHang {
 		System.out.println("Ten: "+name);
 		System.out.println("CCCD: "+idCard);
 		System.out.println("SDT: "+phone);
+	}
+
+	@Override
+	public String getLine() {
+		return id+";"+name+";"+idCard+";"+phone;
 	}
 	
 	

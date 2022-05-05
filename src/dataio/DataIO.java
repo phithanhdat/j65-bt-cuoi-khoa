@@ -1,14 +1,21 @@
 package dataio;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 
 import entity.DataTemplate;
 import entity.KhachHang;
 import entity.Phong;
+import entity.Status;
+import entity.ThongTinDatPhong;
+import interfaces.Saveable;
+import utils.Utils;
 
 public class DataIO {
 	public static String root = "D:\\data"; 
@@ -30,7 +37,8 @@ public class DataIO {
 				list.add(room);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
+			System.out.println("--> no file: "+fileName);
 		} finally {
 			try {
 				if (bufR != null) bufR.close();
@@ -63,5 +71,54 @@ public class DataIO {
 			return new KhachHang(id, name, idCard, phone);
 		});
 		return listCustomer;
+	}
+
+	public static ArrayList<ThongTinDatPhong> loadOrder(String fileName) {
+		ArrayList<ThongTinDatPhong> listOrder = loadData(fileName, s -> {
+			String[] parts = s.split(";");
+			int id = Integer.parseInt(parts[0]);
+			int customerId = Integer.parseInt(parts[1]);
+			int roomId = Integer.parseInt(parts[2]);
+			int numDay = Integer.parseInt(parts[3]);
+			Date checkIn = Utils.convertDate(parts[4]);
+			return new ThongTinDatPhong(id, customerId, numDay, roomId, checkIn, parts[5]);
+		});
+		return listOrder;
+	}
+
+	public static void saveGuest(String fileName, ArrayList<KhachHang> listCustomer) {
+		ArrayList<Saveable> converted = new ArrayList<>();
+		for (Saveable item : listCustomer) {
+			converted.add(item);
+		}
+		saveData(fileName, converted);
+	}
+	
+	public static void saveOrder(String fileName, ArrayList<ThongTinDatPhong> listOrder) {
+		ArrayList<Saveable> converted = new ArrayList<>();
+		for (Saveable item : listOrder) {
+			converted.add(item);
+		}
+		saveData(fileName, converted);
+	}
+	
+	private static void saveData(String fileName, ArrayList<Saveable> list) {
+		File file = new File(root + File.separator + fileName);
+		FileWriter fwt = null;
+		BufferedWriter bufW = null;
+		try {
+			fwt = new FileWriter(file);
+			bufW = new BufferedWriter(fwt);
+			for (Saveable t : list) {
+				bufW.write(t.getLine());
+				bufW.newLine();
+			}
+		}catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (bufW!=null) bufW.close();
+			} catch (Exception e) {}
+		}
 	}
 }

@@ -1,23 +1,40 @@
 package entity;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Scanner;
 
+import interfaces.Saveable;
 import utils.Utils;
 
-public class ThongTinDatPhong {
+public class ThongTinDatPhong implements Saveable{
 	private int guestId, numDays;
-	private int[] roomIds;
+	private int roomId;
 	private Date checkIn;
 	private Status status;
+	private int id;
 	
-	public ThongTinDatPhong(int guestId, int numDays, int[] roomIds, Date checkIn) {
+	private static int currentID = 100;
+	public static ArrayList<ThongTinDatPhong> listRoomOrder = null;
+	
+	public ThongTinDatPhong(int guestId, int numDays, int roomId, Date checkIn) {
 		this.guestId = guestId;
 		this.numDays = numDays;
-		this.roomIds = roomIds;
+		this.roomId = roomId;
 		this.checkIn = checkIn;
 		this.status = Status.PRE_CHECK_IN;
+		this.id = ++currentID;
+	}
+	
+	public ThongTinDatPhong(int id, int guestId, int numDays, int roomId, Date checkIn, String status) {
+		this.id = id;
+		this.guestId = guestId;
+		this.numDays = numDays;
+		this.roomId = roomId;
+		this.checkIn = checkIn;
+		this.status = Utils.convertStatus(status);
+		currentID = id >= currentID ? id : currentID;
 	}
 	
 
@@ -37,12 +54,12 @@ public class ThongTinDatPhong {
 		this.numDays = numDays;
 	}
 
-	public int[] getRoomIds() {
-		return roomIds;
+	public int getRoomId() {
+		return roomId;
 	}
 
-	public void setRoomIds(int[] roomIds) {
-		this.roomIds = roomIds;
+	public void setRoomIds(int roomId) {
+		this.roomId = roomId;
 	}
 
 	public Date getCheckIn() {
@@ -62,9 +79,34 @@ public class ThongTinDatPhong {
 	public void setStatus(Status status) {
 		this.status = status;
 	}
+	
+	
+	
+	public int getId() {
+		return id;
+	}
 
 
-	public static ThongTinDatPhong nhap(int id) {
+	public void setId(int id) {
+		this.id = id;
+	}
+
+
+	public String getLine() {
+		String checkInStr = Utils.convertDate(checkIn);
+		return id+";"+guestId+";"+roomId+";"+numDays+";"+checkInStr+";"+status;
+	}
+	
+	public Date getCheckoutDate() {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(checkIn);
+		cal.add(Calendar.DAY_OF_MONTH, numDays);
+		return cal.getTime();
+	}
+
+
+	public static void nhap(int id) {
+		System.out.println("cus: "+id);
 		Scanner sc = new Scanner(System.in);
 		System.out.println("Chon loai phong: ");
 		System.out.println("1. Phong don");
@@ -86,11 +128,50 @@ public class ThongTinDatPhong {
 			typeStr = "P-DON";	
 		}
 		System.out.println("Nhap thoi gian check in: ");
+		sc.nextLine();
 		String checkIn = sc.nextLine();
 		Date checkInDate = Utils.convertDate(checkIn);
-		ArrayList<Phong> availableRooms = Phong.getAvailableRooms(checkInDate);
+		System.out.println("Nhap so ngay thue:");
+		int numDay = sc.nextInt();
 		
-		return null;
+		ArrayList<Phong> availableRooms = Phong.getAvailableRooms(checkInDate, typeStr, numDay);
+		Utils.inDanhSach(availableRooms , "Danh sach phong trong");
+		System.out.println("Nhap so luong phong muon thue:");
+		int numRoom = sc.nextInt();
+		for (int i = 0; i < numRoom; i++) {
+			System.out.println("Nhap ma phong:");
+			int roomId = sc.nextInt();
+			ThongTinDatPhong order = new ThongTinDatPhong(id, numDay, roomId, checkInDate);
+			if(listRoomOrder==null) {
+				listRoomOrder = new ArrayList<>();
+			}
+			listRoomOrder.add(order);
+		};
+	}
+
+	@SuppressWarnings("unchecked")
+	public static ArrayList<ThongTinDatPhong> filterByDate(Date checkInDate, int numDay) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(checkInDate);
+		Date checkOut = cal.getTime();
+		ArrayList<ThongTinDatPhong> filtered = new ArrayList<>();
+		if (listRoomOrder != null) {
+			filtered = (ArrayList<ThongTinDatPhong>) listRoomOrder.clone();
+			filtered.removeIf(o -> {
+				boolean busy = o.getCheckoutDate().after(checkInDate) && o.checkIn.before(checkOut);
+				return !busy;
+			});
+		}
+		return filtered;
+	}
+
+	public static boolean contains(ArrayList<ThongTinDatPhong> ds2, Phong p) {
+		for (ThongTinDatPhong record : ds2) {
+			if (record.roomId == p.getId()) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	
